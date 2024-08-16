@@ -1,14 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { SignUpDto } from './dto/sign_up.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Credentials } from './entity/credentials.entity';
-import { Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-import Redis from 'ioredis';
 import { MailerService } from '@nestjs-modules/mailer';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { SignUpDto } from './dto/sign_up.dto';
+import { Credentials } from './entity/credentials.entity';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +14,7 @@ export class AuthService {
     @InjectRepository(Credentials)
     private readonly credentialsRepository: Repository<Credentials>,
     private jwtService: JwtService,
-    private mailerService : MailerService
+    private mailerService: MailerService,
   ) {}
 
   /**
@@ -42,7 +40,7 @@ export class AuthService {
       // const token = await this.jwtService.signAsync(payload);
       await this.sendVerificationEmail(signUpDto.email, confirmationToken);
       await this.credentialsRepository.save(credentials);
-      console.log(confirmationToken+" from regi");
+      console.log(confirmationToken + ' from regi');
       return 'Registration successful. Please check your email for verification.';
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -52,6 +50,10 @@ export class AuthService {
   async sendVerificationEmail(email: string, token: string) {
     const url = `http://localhost:3000/auth/v1/confirm?token=${token}`;
     await this.mailerService.sendMail({
+      from: {
+        name: "No reply",
+        address: "MS_Ntiun0@trial-neqvygmypyjg0p7w.mlsender.net"
+      },
       to: email,
       subject: 'Email confirmation',
       html: `Please click this link to confirm your email: <a href="${url}">${url}</a>`,
@@ -74,7 +76,7 @@ export class AuthService {
       if (!(await bcrypt.compare(signUpDto.password, user.password))) {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
-      if(!user.isVerified){
+      if (!user.isVerified) {
         await this.sendVerificationEmail(user.email, user.confirmationToken);
         return 'Verification needed. Please check your email for verification.';
       }
@@ -90,10 +92,15 @@ export class AuthService {
   }
 
   async confirmEmail(token: string): Promise<string> {
-    try{
-      const user = await this.credentialsRepository.findOne({ where: { confirmationToken: token } });
+    try {
+      const user = await this.credentialsRepository.findOne({
+        where: { confirmationToken: token },
+      });
       if (!user) {
-        throw new HttpException('Invalid confirmation token', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Invalid confirmation token',
+          HttpStatus.BAD_REQUEST,
+        );
       }
       user.isVerified = true;
       user.confirmationToken = null;
@@ -101,7 +108,7 @@ export class AuthService {
       const payload = { email: user.email, userId: user._id };
       const jwtToken = await this.jwtService.signAsync(payload);
       return 'https://youtube.com'; // URL to redirect to after confirmation
-    }catch(err){
+    } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
