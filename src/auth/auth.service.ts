@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { SignUpDto } from './dto/sign_up.dto';
 import { Credentials } from './entity/credentials.entity';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class AuthService {
@@ -48,17 +50,32 @@ export class AuthService {
   }
 
   async sendVerificationEmail(email: string, token: string) {
-    const url = `http://localhost:3000/auth/v1/confirm?token=${token}`;
+    const verificationLink = `http://localhost:3000/auth/v1/confirm?token=${token}`;
+    
+    // Read the HTML template (you'll need to implement this method)
+    let emailTemplate = await this.readEmailTemplate();
+    
+    // Replace the placeholder with the actual verification link
+    emailTemplate = emailTemplate.replace('{{verificationLink}}', verificationLink);
+  
     await this.mailerService.sendMail({
       from: {
         name: "No reply",
         address: "MS_Ntiun0@trial-neqvygmypyjg0p7w.mlsender.net"
       },
       to: email,
-      subject: 'Email confirmation',
-      html: `Please click this link to confirm your email: <a href="${url}">${url}</a>`,
+      subject: 'Verify Your Email Address',
+      html: emailTemplate,
     });
   }
+
+ 
+
+// Add this method to your AuthService class
+async readEmailTemplate(): Promise<string> {
+  const templatePath = join(process.cwd(), 'templates', 'emails', 'email-verification.html');
+  return await readFile(templatePath, 'utf8');
+}
 
   /**
    * Authenticates a user using their email and password.
