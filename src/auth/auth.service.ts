@@ -50,24 +50,24 @@ export class AuthService {
   }
 
   async sendVerificationEmail(email: string, token: string) {
-    const verificationLink = `http://localhost:3000/auth/v1/confirm?token=${token}`;
-    
-    // Read the HTML template (you'll need to implement this method)
-    let emailTemplate = await this.readEmailTemplate();
-    
-    // Replace the placeholder with the actual verification link
-    emailTemplate = emailTemplate.replace('{{verificationLink}}', verificationLink);
+  const verificationLink = `http://auth.logix.lakshyap2.me.uk/auth/v1/confirm?token=${token}`;
   
-    await this.mailerService.sendMail({
-      from: {
-        name: "No reply",
-        address: "MS_Ntiun0@trial-neqvygmypyjg0p7w.mlsender.net"
-      },
-      to: email,
-      subject: 'Verify Your Email Address',
-      html: emailTemplate,
-    });
-  }
+  // Read the HTML template (you'll need to implement this method)
+  let emailTemplate = await this.readEmailTemplate();
+  
+  // Replace the placeholder with the actual verification link
+  emailTemplate = emailTemplate.replace('{{verificationLink}}', verificationLink);
+
+  await this.mailerService.sendMail({
+    from: {
+      name: "No reply",
+      address: "MS_Ntiun0@trial-neqvygmypyjg0p7w.mlsender.net"
+    },
+    to: email,
+    subject: 'Verify Your Email Address',
+    html: emailTemplate,
+  });
+}
 
  
 
