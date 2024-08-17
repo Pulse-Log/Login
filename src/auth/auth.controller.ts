@@ -37,9 +37,10 @@ export class AuthController {
   @Redirect()
   async confirmEmail(@Query('token') token: string) {
     const jwt =  await this.authService.confirmEmail(token);
-    const url = this.configService.get<string>('CORS_ORIGIN');
+    // const url = this.configService.get<string>('CORS_ORIGIN');
+    const url = "https://youtube.com";
     return { 
-      url: `${url}?token=${jwt}`
+      url: `${url}?jwtToken=${jwt}`
   };
   }
 }
