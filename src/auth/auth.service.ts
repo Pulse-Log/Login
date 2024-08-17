@@ -29,8 +29,10 @@ export class AuthService {
       const user = await this.credentialsRepository.findOne({
         where: { email: signUpDto.email },
       });
-      if (user) {
+      if (user && user.isVerified) {
         throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      }else if(user){
+        await this.credentialsRepository.remove(user);
       }
       const credentials = new Credentials();
       credentials.email = signUpDto.email;
@@ -124,7 +126,7 @@ async readEmailTemplate(): Promise<string> {
       await this.credentialsRepository.save(user);
       const payload = { email: user.email, userId: user._id };
       const jwtToken = await this.jwtService.signAsync(payload);
-      return 'https://youtube.com'; // URL to redirect to after confirmation
+      return jwtToken;
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

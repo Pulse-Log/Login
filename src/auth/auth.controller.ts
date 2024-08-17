@@ -14,13 +14,14 @@ import { HttpExceptionFilter } from 'src/helpers/filter/exception.filter';
 import { TransformInterceptor } from 'src/helpers/interceptor/transform.interceptor';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign_up.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth/v1')
 @UseFilters(HttpExceptionFilter)
 @UseInterceptors(TransformInterceptor)
 @UseGuards(ThrottlerGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService,private readonly configService: ConfigService) {}
 
   @Post('/signup')
   signup(@Body() signUpDto: SignUpDto) {
@@ -33,8 +34,12 @@ export class AuthController {
   }
 
   @Get('confirm')
-  @Redirect('https://youtube.com')
+  @Redirect()
   async confirmEmail(@Query('token') token: string) {
-    return await this.authService.confirmEmail(token);
+    const jwt =  await this.authService.confirmEmail(token);
+    const url = this.configService.get<string>('CORS_ORIGIN');
+    return { 
+      url: `${url}?token=${jwt}`
+  };
   }
 }
