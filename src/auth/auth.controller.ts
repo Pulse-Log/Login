@@ -5,6 +5,7 @@ import {
     Post,
     Query,
     Redirect,
+    Res,
     UseFilters,
     UseGuards,
     UseInterceptors
@@ -15,6 +16,7 @@ import { TransformInterceptor } from 'src/helpers/interceptor/transform.intercep
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign_up.dto';
 import { ConfigService } from '@nestjs/config';
+import {Response} from 'express';
 
 @Controller('auth/v1')
 @UseFilters(HttpExceptionFilter)
@@ -34,13 +36,10 @@ export class AuthController {
   }
 
   @Get('confirm')
-  @Redirect()
-  async confirmEmail(@Query('token') token: string) {
+  async confirmEmail(@Query('token') token: string, @Res() res: Response) {
     const jwt =  await this.authService.confirmEmail(token);
-    // const url = this.configService.get<string>('CORS_ORIGIN');
-    const url = "https://youtube.com";
-    return { 
-      url: `${url}?jwtToken=${jwt}`
-  };
+    const url = this.configService.get<string>('CORS_ORIGIN');
+    // const url = "https://youtube.com";
+    return res.redirect(`${url}?jwtToken=${jwt}`);
   }
 }
