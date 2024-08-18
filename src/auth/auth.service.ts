@@ -53,7 +53,7 @@ export class AuthService {
 
   async sendVerificationEmail(email: string, token: string) {
   const verificationLink = `https://auth.logix.corevision.live/auth/v1/confirm?token=${token}`;
-  
+  // const verificationLink = `http://localhost:3001/auth/v1/confirm?token=${token}`;
   // Read the HTML template (you'll need to implement this method)
   let emailTemplate = await this.readEmailTemplate();
   
@@ -110,7 +110,7 @@ async readEmailTemplate(): Promise<string> {
     }
   }
 
-  async confirmEmail(token: string): Promise<string> {
+  async confirmEmail(token: string){
     try {
       const user = await this.credentialsRepository.findOne({
         where: { confirmationToken: token },
@@ -126,7 +126,10 @@ async readEmailTemplate(): Promise<string> {
       await this.credentialsRepository.save(user);
       const payload = { email: user.email, userId: user._id };
       const jwtToken = await this.jwtService.signAsync(payload);
-      return jwtToken;
+      return {
+        accessToken: jwtToken,
+        userId: user._id
+      };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }

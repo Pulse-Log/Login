@@ -36,10 +36,10 @@ export class AuthController {
   }
 
   @Get('confirm')
-  async confirmEmail(@Query('token') token: string, @Res() res: Response) {
-    const jwt =  await this.authService.confirmEmail(token);
-    const url = this.configService.get<string>('CORS_ORIGIN');
-    // const url = "https://youtube.com";
-    return res.redirect(`${url}?jwtToken=${jwt}`);
-  }
+async confirmEmail(@Query('token') token: string, @Res() res: Response) {
+  const object = await this.authService.confirmEmail(token);
+  const url = this.configService.get<string>('CORS_ORIGIN');
+  return res.redirect(`${url}/auth/confirm/?jwtToken=${object.accessToken}&userId=${object.userId}`);
+}
+
 }
