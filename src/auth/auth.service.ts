@@ -52,7 +52,7 @@ export class AuthService {
   }
 
   async sendVerificationEmail(email: string, token: string) {
-  const verificationLink = `https://auth.logix.corevision.live/auth/v1/confirm?token=${token}`;
+  const verificationLink = `https://au.logix.corevision.live/auth/v1/confirm?token=${token}`;
   // const verificationLink = `http://localhost:3001/auth/v1/confirm?token=${token}`;
   // Read the HTML template (you'll need to implement this method)
   let emailTemplate = await this.readEmailTemplate();
