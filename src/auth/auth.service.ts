@@ -63,7 +63,7 @@ export class AuthService {
   await this.mailerService.sendMail({
     from: {
       name: "No reply",
-      address: "MS_Ntiun0@trial-neqvygmypyjg0p7w.mlsender.net"
+      address: "MS_q5B3Qv@auth.logix.corevision.live"
     },
     to: email,
     subject: 'Verify Your Email Address',
