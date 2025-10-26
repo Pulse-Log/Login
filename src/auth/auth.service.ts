@@ -31,53 +31,60 @@ export class AuthService {
       });
       if (user && user.isVerified) {
         throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
-      }else if(user){
+      } else if (user) {
         await this.credentialsRepository.remove(user);
       }
       const credentials = new Credentials();
       credentials.email = signUpDto.email;
       const hashPass = await bcrypt.hash(signUpDto.password, 10);
       credentials.password = hashPass;
-      const confirmationToken = uuidv4();
-      credentials.confirmationToken = confirmationToken.toString();
+      credentials.isVerified = true;
+      // const confirmationToken = uuidv4();
+      // credentials.confirmationToken = confirmationToken.toString();
       // const payload = { email: signUpDto.email, password: signUpDto.password };
       // const token = await this.jwtService.signAsync(payload);
-      await this.sendVerificationEmail(signUpDto.email, confirmationToken);
+      // await this.sendVerificationEmail(signUpDto.email, confirmationToken);
       await this.credentialsRepository.save(credentials);
-      console.log(confirmationToken + ' from regi');
-      return 'Registration successful. Please check your email for verification.';
+      // console.log(confirmationToken + ' from regi');
+      return 'Registration successful. You can now log in.';
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async sendVerificationEmail(email: string, token: string) {
-  const verificationLink = `https://au.logix.corevision.live/auth/v1/confirm?token=${token}`;
-  // const verificationLink = `http://localhost:3001/auth/v1/confirm?token=${token}`;
-  // Read the HTML template (you'll need to implement this method)
-  let emailTemplate = await this.readEmailTemplate();
-  
-  // Replace the placeholder with the actual verification link
-  emailTemplate = emailTemplate.replace('{{verificationLink}}', verificationLink);
+    const verificationLink = `https://au.logix.corevision.live/auth/v1/confirm?token=${token}`;
+    // const verificationLink = `http://localhost:3001/auth/v1/confirm?token=${token}`;
+    // Read the HTML template (you'll need to implement this method)
+    let emailTemplate = await this.readEmailTemplate();
 
-  await this.mailerService.sendMail({
-    from: {
-      name: "No reply",
-      address: "MS_q5B3Qv@auth.logix.corevision.live"
-    },
-    to: email,
-    subject: 'Verify Your Email Address',
-    html: emailTemplate,
-  });
-}
+    // Replace the placeholder with the actual verification link
+    emailTemplate = emailTemplate.replace(
+      '{{verificationLink}}',
+      verificationLink,
+    );
 
- 
+    await this.mailerService.sendMail({
+      from: {
+        name: 'No reply',
+        address: 'MS_q5B3Qv@auth.logix.corevision.live',
+      },
+      to: email,
+      subject: 'Verify Your Email Address',
+      html: emailTemplate,
+    });
+  }
 
-// Add this method to your AuthService class
-async readEmailTemplate(): Promise<string> {
-  const templatePath = join(process.cwd(), 'templates', 'emails', 'email-verification.html');
-  return await readFile(templatePath, 'utf8');
-}
+  // Add this method to your AuthService class
+  async readEmailTemplate(): Promise<string> {
+    const templatePath = join(
+      process.cwd(),
+      'templates',
+      'emails',
+      'email-verification.html',
+    );
+    return await readFile(templatePath, 'utf8');
+  }
 
   /**
    * Authenticates a user using their email and password.
@@ -110,7 +117,7 @@ async readEmailTemplate(): Promise<string> {
     }
   }
 
-  async confirmEmail(token: string){
+  async confirmEmail(token: string) {
     try {
       const user = await this.credentialsRepository.findOne({
         where: { confirmationToken: token },
@@ -128,7 +135,7 @@ async readEmailTemplate(): Promise<string> {
       const jwtToken = await this.jwtService.signAsync(payload);
       return {
         accessToken: jwtToken,
-        userId: user._id
+        userId: user._id,
       };
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);

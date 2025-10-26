@@ -11,12 +11,12 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,  // Make ConfigModule global
+      isGlobal: true, // Make ConfigModule global
     }),
     AuthModule,
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        type: 'mongodb' as const,
+        type: 'postgres' as const,
         url: configService.get<string>('DATABASE_URL'),
         database: configService.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
@@ -34,7 +34,7 @@ import { AuthModule } from './auth/auth.module';
           auth: {
             user: configService.get<string>('MAILER_USER'),
             pass: configService.get<string>('MAILER_PASS'),
-          },  
+          },
         },
         defaults: {
           from: configService.get<string>('MAILER_DEFAULT_FROM'),
@@ -52,8 +52,8 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Enable CORS with custom options
     const corsOptions = {
-      origin: this.configService.get<string>('CORS_ORIGIN'),
-      methods: this.configService.get<string>('CORS_METHODS'),
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       credentials: this.configService.get<boolean>('CORS_CREDENTIALS'),
     };
 
